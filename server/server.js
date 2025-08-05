@@ -19,7 +19,7 @@ app.use(express.json());
 
 // --- 2. Conectarea la MongoDB Atlas ---
 // !!! ASIGURĂ-TE CĂ AI ÎNLOCUIT AICI CU LINK-UL TĂU REAL ȘI PAROLA CORECTĂ !!!
-const connectionString = "mongodb+srv://user_aplicatie:PAROLA-TA-AICI@clusterore.xxxxx.mongodb.net/?retryWrites=true&w=majority";
+const connectionString = "mongodb+srv://user_aplicatie:suntsmecher1@cluster0.4mwkvog.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 const client = new MongoClient(connectionString, {
     serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true }
