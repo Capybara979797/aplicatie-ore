@@ -112,7 +112,7 @@
             const modalDateEl = document.getElementById('modal-date');
             const selectedDateInput = document.getElementById('selected-date');
 
-            const API_URL = 'http://localhost:3000/api';
+            const API_URL = 'https://aplicatie-ore.onrender.com/api';
             let workData = {};
             let currentDate = new Date(2025, 7, 1);
             const minDate = new Date(2025, 7, 1);
@@ -138,7 +138,7 @@
                 const token = localStorage.getItem('authToken');
                 if (!token || (socket && socket.connected)) return;
 
-                socket = io("http://localhost:3000");
+                socket = io("https://aplicatie-ore.onrender.com/");
 
                 socket.on('connect', () => {
                     socket.emit('user_online', { token: token });
