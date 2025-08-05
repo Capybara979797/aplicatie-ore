@@ -1,4 +1,4 @@
-// Fisier: /server/server.js (Versiunea 4.2 - Corecție IP Public)
+// Fisier: /server/server.js (Versiunea 4.3 - Corecție Salvare Date)
 
 const express = require('express');
 const http = require('http');
@@ -9,9 +9,7 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 
-// --- 1. Configurarea Serverului ---
 const app = express();
-// MODIFICAT: Adăugăm această linie pentru a avea încredere în proxy-ul Render
 app.set('trust proxy', 1);
 
 const server = http.createServer(app);
@@ -26,7 +24,7 @@ const SECRET_KEY = 'cheia-ta-super-secreta-pe-care-o-vei-schimba';
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "admin123";
 
-// --- 2. Funcții ajutătoare pentru Baza de Date ---
+// --- Funcții ajutătoare pentru Baza de Date ---
 const readDB = () => {
     if (!fs.existsSync(DB_PATH)) {
         fs.writeFileSync(DB_PATH, JSON.stringify({ users: {}, workData: {} }));
@@ -39,7 +37,7 @@ const writeDB = (data) => {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
 };
 
-// --- 3. Middleware pentru Autentificare ---
+// --- Middleware pentru Autentificare ---
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -51,7 +49,7 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// --- 4. Rute API pentru HTTP ---
+// --- Rute API ---
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) { return res.status(400).json({ message: 'Numele de utilizator și parola sunt obligatorii.' }); }
@@ -59,7 +57,7 @@ app.post('/api/register', async (req, res) => {
     if (db.users[username]) { return res.status(409).json({ message: 'Numele de utilizator există deja.' }); }
     const hashedPassword = await bcrypt.hash(password, 10);
     db.users[username] = { password: hashedPassword };
-    db.workData[username] = {};
+    db.workData[username] = {}; // Inițializăm containerul pentru datele de lucru
     writeDB(db);
     io.emit('new_user_registered', { username: username });
     res.status(201).json({ message: 'Utilizator înregistrat cu succes!' });
@@ -93,12 +91,20 @@ app.get('/api/workdata', authenticateToken, (req, res) => {
 app.post('/api/workdata', authenticateToken, (req, res) => {
     const { date, entries } = req.body;
     if (!date || typeof entries === 'undefined') { return res.status(400).json({ message: 'Datele trimise sunt incomplete.' }); }
+    
     const db = readDB();
+
+    // CORECȚIA PRINCIPALĂ: Verificăm dacă există containerul pentru datele utilizatorului. Dacă nu, îl creăm.
+    if (!db.workData[req.user.username]) {
+        db.workData[req.user.username] = {};
+    }
+
     if (entries.length > 0) {
         db.workData[req.user.username][date] = { entries };
     } else {
         delete db.workData[req.user.username][date];
     }
+    
     writeDB(db);
     res.status(200).json({ message: 'Date salvate cu succes!' });
 });
@@ -115,10 +121,9 @@ app.delete('/api/workdata/:date', authenticateToken, (req, res) => {
     }
 });
 
-// --- 5. Logica pentru comunicare în timp real (Socket.IO) ---
+
 let onlineUsers = {};
 let adminSockets = [];
-
 io.on('connection', (socket) => {
     socket.on('user_online', (data) => {
         try {
@@ -128,21 +133,18 @@ io.on('connection', (socket) => {
                 socket.emit('update_online_users', onlineUsers);
             } else if (decoded.username) {
                 const username = decoded.username;
-                // MODIFICAT: Logica pentru a citi IP-ul corect de la Render
                 const ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address.replace('::ffff:', '');
                 onlineUsers[username] = { socketId: socket.id, ip: ip };
                 io.emit('update_online_users', onlineUsers);
             }
         } catch (err) { /* Ignorăm token-urile invalide */ }
     });
-
     socket.on('admin_get_user_data', (data) => {
         const { username } = data;
         const db = readDB();
         const userData = db.workData[username] || {};
         socket.emit('admin_receive_user_data', { username: username, workData: userData });
     });
-
     socket.on('send_message_to_user', (data) => {
         const { targetUsername, message } = data;
         const targetUser = onlineUsers[targetUsername];
@@ -150,7 +152,6 @@ io.on('connection', (socket) => {
             io.to(targetUser.socketId).emit('new_message', { message: message });
         }
     });
-
     socket.on('disconnect', () => {
         let wasUser = false;
         for (const username in onlineUsers) {
@@ -167,7 +168,6 @@ io.on('connection', (socket) => {
     });
 });
 
-// --- 6. Pornirea Serverului ---
 const PORT = 3000;
 server.listen(PORT, () => {
     console.log(`Serverul rulează pe http://localhost:${PORT}`);
