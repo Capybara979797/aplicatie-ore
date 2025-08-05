@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Luke Sistem for work</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS-ul complet și corect */
+        :root { --primary-color: #3A7BD5; --gradient-start: #3A7BD5; --gradient-end: #00D2FF; --secondary-color: #ffffff; --text-color: #2c3e50; --subtle-text-color: #7f8c8d; --border-color: #ecf0f1; --shadow-color: rgba(44, 62, 80, 0.15); --modal-bg: rgba(0, 0, 0, 0.5); --danger-color: #e74c3c; --success-color: #2ecc71; --font-family: 'Poppins', sans-serif; --safe-area-inset-top: env(safe-area-inset-top, 20px); --safe-area-inset-right: env(safe-area-inset-right, 20px); --safe-area-inset-bottom: env(safe-area-inset-bottom, 20px); --safe-area-inset-left: env(safe-area-inset-left, 20px); }
+        html { -webkit-text-size-adjust: 100%; }
+        body { font-family: var(--font-family); background: #f0f2f5; color: var(--text-color); margin: 0; padding: 10px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        #auth-container { display: none; width: 100%; max-width: 400px; background: var(--secondary-color); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px var(--shadow-color); text-align: center; }
+        #auth-container h2 { margin-bottom: 25px; color: var(--text-color); }
+        #auth-container input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-family: var(--font-family); font-size: 16px; }
+        #auth-container button { width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end)); color: #fff; font-size: 1em; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; margin-top: 10px; }
+        #auth-container .toggle-form-btn { background: none; color: var(--primary-color); margin-top: 15px; font-size: 0.9em; box-shadow: none; }
+        #auth-message { margin-top: 15px; color: var(--danger-color); min-height: 20px; font-size: 0.9em; }
+        .app-container { display: none; width: 100%; max-width: 1100px; background: var(--secondary-color); padding: 30px 40px; border-radius: 20px; box-shadow: 0 10px 30px var(--shadow-color); animation: fadeInDown 0.8s ease-out; box-sizing: border-box; }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        header { text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+        header h1 { font-size: 2.5em; font-weight: 700; margin: 0; background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end)); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+        .subtitle { margin-top: 5px; font-size: 1.1em; color: var(--subtle-text-color); font-weight: 300; }
+        .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-controls button { background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end)); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 1em; font-family: var(--font-family); font-weight: 600; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 4px 10px rgba(58, 123, 213, 0.3); }
+        .calendar-controls button:disabled { background: #bdc3c7; box-shadow: none; cursor: not-allowed; transform: none; }
+        #month-name { font-size: 1.8em; font-weight: 600; color: var(--text-color); text-align: center; }
+        #total-hours-container { text-align: center; margin: -10px 0 20px 0; font-size: 1.2em; color: var(--text-color); }
+        #total-hours { font-weight: 700; color: var(--primary-color); font-size: 1.5em; padding: 0 5px; transition: color 0.4s ease; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        .day-header { padding: 10px 0; text-align: center; font-weight: 600; color: var(--subtle-text-color); font-size: 0.9em; }
+        .day { min-height: 100px; border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: background-color 0.3s ease; position: relative; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; overflow: hidden; }
+        .day.not-in-month { background-color: #f8f9fa; cursor: default; }
+        .day .day-number { font-weight: 600; align-self: flex-start; }
+        .day-entries { width: 100%; font-size: 0.8em; margin-top: 5px; }
+        .day-entry-item { display: flex; justify-content: space-between; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+        .day-entry-item .location { overflow: hidden; text-overflow: ellipsis; margin-right: 5px; color: var(--subtle-text-color); }
+        .day-entry-item .hours { font-weight: 600; color: var(--primary-color); flex-shrink: 0; }
+        .day .day-total-hours { align-self: flex-end; font-weight: 700; font-size: 1.1em; color: var(--primary-color); }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: var(--modal-bg); backdrop-filter: blur(5px); animation: fadeIn 0.3s ease; }
+        .modal-content { background-color: #f0f2f5; margin: 5% auto; padding: 35px; width: 90%; max-width: 600px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; animation: modalPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .close-button { color: #888; position: absolute; top: 15px; right: 20px; font-size: 32px; font-weight: bold; cursor: pointer; transition: transform 0.2s ease, color 0.2s ease; }
+        .modal-title { font-size: 1.5em; font-weight: 600; margin-bottom: 25px; color: var(--primary-color); }
+        .modal-form label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9em; }
+        .modal-form input, .modal-form textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-family: var(--font-family); transition: border-color 0.3s, box-shadow 0.3s; font-size: 16px; }
+        .entry-group { background: var(--secondary-color); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 15px; position: relative; }
+        .delete-entry-btn { position: absolute; top: 5px; right: 5px; width: 28px; height: 28px; border: none; background: #f1f2f6; color: var(--subtle-text-color); border-radius: 50%; font-size: 20px; line-height: 28px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
+        .add-entry-container { text-align: center; margin: 10px 0 25px 0; }
+        #add-entry-btn { background: none; border: 2px dashed var(--success-color); color: var(--success-color); padding: 10px 20px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .form-actions { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-top: 20px; }
+        #save-button { background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end)); color: #fff; box-shadow: 0 4px 10px rgba(58, 123, 213, 0.3); }
+        #delete-all-btn { background-color: var(--danger-color); color: #fff; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3); }
+        .data-management { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        #logout-btn { background-color: #95a5a6; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: var(--font-family); font-size: 0.9em; transition: background-color 0.3s; }
+        
+        @media (max-width: 768px) {
+            body { padding: 0; justify-content: center; align-items: center; }
+            #auth-container { display: none; width: 90%; padding: 30px 20px; box-shadow: none; border-radius: 12px; }
+            .app-container { padding: 20px 15px; border-radius: 0; height: 100vh; box-shadow: none; }
+            .modal { animation: none; backdrop-filter: none; background: #f0f2f5; overscroll-behavior: contain; }
+            .modal-content { width: 100%; height: 100%; max-width: 100%; margin: 0; border-radius: 0; box-shadow: none; animation: none; display: flex; flex-direction: column; padding: 0; }
+            .modal-title { padding: 15px; padding-top: calc(var(--safe-area-inset-top) + 15px); }
+            .close-button { top: calc(var(--safe-area-inset-top) + 10px); right: 15px; }
+            .modal-form { flex-grow: 1; overflow-y: auto; padding: 15px; }
+            .form-actions { flex-shrink: 0; padding: 15px; padding-bottom: calc(var(--safe-area-inset-bottom) + 15px); background: var(--secondary-color); border-top: 1px solid var(--border-color); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="auth-container">
+        <form id="login-form"><h2>Autentificare</h2><div id="auth-message"></div><input type="text" id="login-username" placeholder="Nume utilizator" required autocomplete="username"><input type="password" id="login-password" placeholder="Parolă" required autocomplete="current-password"><button type="submit">Intră în cont</button><button type="button" class="toggle-form-btn" id="show-register">Nu ai cont? Înregistrează-te</button></form>
+        <form id="register-form" style="display: none;"><h2>Înregistrare</h2><input type="text" id="register-username" placeholder="Alege un nume de utilizator" required autocomplete="username"><input type="password" id="register-password" placeholder="Alege o parolă" required autocomplete="new-password"><button type="submit">Creează Cont</button><button type="button" class="toggle-form-btn" id="show-login">Ai deja cont? Intră în cont</button></form>
+    </div>
+    <div class="app-container">
+        <header><h1>Luke Sistem for work</h1><p class="subtitle">O metodă simplă și elegantă pentru a-ți monitoriza timpul</p></header>
+        <div class="calendar-controls"><button id="prev-month">&lt; Luna Anterioară</button><h2 id="month-name"></h2><button id="next-month">Luna Următoare &gt;</button></div>
+        <div id="total-hours-container">Total ore pe lună: <span id="total-hours">0.0</span></div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+        <div class="data-management"><button id="logout-btn">🚪 Deconectare</button></div>
+    </div>
+    <div id="entry-modal" class="modal">
+        <div class="modal-content"><h3 id="modal-date" class="modal-title"></h3><span class="close-button">&times;</span><div class="modal-form"><input type="hidden" id="selected-date"><div id="entry-form-fields"></div><div class="add-entry-container"><button id="add-entry-btn">+ Adaugă un loc</button></div></div>
+            <div class="form-actions"><button id="delete-all-btn">🗑️ Șterge Toată Ziua</button><button id="save-button">✅ Salvează</button></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const authContainer = document.getElementById('auth-container');
+            const appContainer = document.querySelector('.app-container');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const authMessage = document.getElementById('auth-message');
+            const showRegisterBtn = document.getElementById('show-register');
+            const showLoginBtn = document.getElementById('show-login');
+            const calendarGrid = document.getElementById('calendar-grid');
+            const monthNameEl = document.getElementById('month-name');
+            const totalHoursEl = document.getElementById('total-hours');
+            const prevMonthBtn = document.getElementById('prev-month');
+            const nextMonthBtn = document.getElementById('next-month');
+            const logoutBtn = document.getElementById('logout-btn');
+            const entryModal = document.getElementById('entry-modal');
+            const closeModalBtn = entryModal.querySelector('.close-button');
+            const entryFormFields = document.getElementById('entry-form-fields');
+            const addEntryBtn = document.getElementById('add-entry-btn');
+            const saveBtn = document.getElementById('save-button');
+            const deleteAllBtn = document.getElementById('delete-all-btn');
+            const modalDateEl = document.getElementById('modal-date');
+            const selectedDateInput = document.getElementById('selected-date');
+
+            const API_URL = 'http://localhost:3000/api';
+            let workData = {};
+            let currentDate = new Date(2025, 7, 1);
+            const minDate = new Date(2025, 7, 1);
+            const maxDate = new Date(2025, 8, 30);
+            let socket;
+
+            function showApp() {
+                authContainer.style.display = 'none';
+                appContainer.style.display = 'block';
+                document.body.style.alignItems = 'flex-start';
+                if (window.innerWidth <= 768) {
+                    document.body.style.alignItems = 'stretch';
+                }
+            }
+
+            function showAuth() {
+                authContainer.style.display = 'block';
+                appContainer.style.display = 'none';
+                document.body.style.alignItems = 'center';
+            }
+            
+            function connectWebSocket() {
+                const token = localStorage.getItem('authToken');
+                if (!token || (socket && socket.connected)) return;
+
+                socket = io("http://localhost:3000");
+
+                socket.on('connect', () => {
+                    socket.emit('user_online', { token: token });
+                });
+
+                socket.on('new_message', (data) => {
+                    alert(`Mesaj de la admin:\n\n${data.message}`);
+                });
+            }
+
+            async function handleLogin(event) {
+                event.preventDefault();
+                authMessage.textContent = '';
+                const username = loginForm.querySelector('#login-username').value;
+                const password = loginForm.querySelector('#login-password').value;
+                try {
+                    const response = await fetch(`${API_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    localStorage.setItem('authToken', result.token);
+                    await initializeApp();
+                } catch (error) {
+                    authMessage.textContent = error.message;
+                }
+            }
+            
+            async function handleRegister(event) {
+                event.preventDefault();
+                authMessage.textContent = '';
+                const username = registerForm.querySelector('#register-username').value;
+                const password = registerForm.querySelector('#register-password').value;
+                try {
+                    const response = await fetch(`${API_URL}/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message);
+                    authMessage.textContent = 'Cont creat! Te poți autentifica.';
+                    authMessage.style.color = 'var(--success-color)';
+                    registerForm.style.display = 'none';
+                    loginForm.style.display = 'block';
+                } catch (error) {
+                    authMessage.textContent = error.message;
+                    authMessage.style.color = 'var(--danger-color)';
+                }
+            }
+
+            function handleLogout() {
+                if (socket) {
+                    socket.disconnect();
+                }
+                localStorage.removeItem('authToken');
+                workData = {};
+                showAuth();
+            }
+
+            async function initializeApp() {
+                await fetchWorkData();
+                showApp();
+                generateCalendar(currentDate);
+                connectWebSocket();
+            }
+
+            async function fetchWorkData() {
+                const token = localStorage.getItem('authToken');
+                if (!token) { handleLogout(); return; }
+                try {
+                    const response = await fetch(`${API_URL}/workdata`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    if (response.status === 401 || response.status === 403) { handleLogout(); return; }
+                    workData = await response.json();
+                } catch (error) { console.error("Eroare la preluarea datelor:", error); }
+            }
+
+            async function handleSaveData() {
+                const date = selectedDateInput.value;
+                if (!date) return;
+                const locationInputs = document.querySelectorAll('.work-location');
+                const hoursInputs = document.querySelectorAll('.hours-worked');
+                const entries = [];
+                for (let i = 0; i < locationInputs.length; i++) {
+                    const location = locationInputs[i].value.trim();
+                    const hours = parseFloat(hoursInputs[i].value);
+                    if (location || hours > 0) { entries.push({ location, hours: hours || 0 }); }
+                }
+                const finalEntries = entries.filter(e => e.location && e.hours > 0);
+                const token = localStorage.getItem('authToken');
+                await fetch(`${API_URL}/workdata`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date, entries: finalEntries })
+                });
+                closeModal();
+                await fetchWorkData();
+                generateCalendar(currentDate);
+            }
+
+            async function handleDeleteAllData() {
+                const date = selectedDateInput.value;
+                if (!date) return;
+                const token = localStorage.getItem('authToken');
+                await fetch(`${API_URL}/workdata/${date}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                closeModal();
+                await fetchWorkData();
+                generateCalendar(currentDate);
+            }
+            
+            function generateCalendar(date) {
+                calendarGrid.innerHTML = '';
+                const year = date.getFullYear(); const month = date.getMonth();
+                monthNameEl.textContent = `${["Ianuarie", "Februarie", "Martie", "Aprilie", "Mai", "Iunie", "Iulie", "August", "Septembrie", "Octombrie", "Noiembrie", "Decembrie"][month]} ${year}`;
+                const firstDayOfCurrentMonth = new Date(year, month, 1);
+                prevMonthBtn.disabled = firstDayOfCurrentMonth <= minDate;
+                const lastDayOfCurrentMonth = new Date(year, month + 1, 0);
+                nextMonthBtn.disabled = lastDayOfCurrentMonth >= maxDate;
+                const firstDayOfMonth = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const startDay = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1;
+
+                ['Lu', 'Ma', 'Mi', 'Jo', 'Vi', 'Sâ', 'Du'].forEach(header => { calendarGrid.insertAdjacentHTML('beforeend', `<div class="day-header">${header}</div>`); });
+                for (let i = 0; i < startDay; i++) { calendarGrid.insertAdjacentHTML('beforeend', `<div class="day not-in-month"></div>`); }
+                let monthlyTotalHours = 0;
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                    const data = workData[dateString];
+                    let dayHTML = `<div class="day" data-date="${dateString}"><div class="day-number">${i}</div>`;
+                    let dayEntriesHTML = '<div class="day-entries">'; let dayTotalHours = 0;
+                    if (data && data.entries && data.entries.length > 0) {
+                        data.entries.forEach(entry => {
+                            dayEntriesHTML += `<div class="day-entry-item"><span class="location">${entry.location}</span><span class="hours">${entry.hours}h</span></div>`;
+                            dayTotalHours += entry.hours;
+                        });
+                        monthlyTotalHours += dayTotalHours;
+                    }
+                    dayEntriesHTML += '</div>'; dayHTML += dayEntriesHTML;
+                    if (dayTotalHours > 0) { dayHTML += `<div class="day-total-hours">${dayTotalHours.toFixed(1)} ore</div>`; }
+                    dayHTML += `</div>`; calendarGrid.insertAdjacentHTML('beforeend', dayHTML);
+                }
+                animateValue(totalHoursEl, parseFloat(totalHoursEl.textContent) || 0, monthlyTotalHours, 500);
+                attachDayClickListeners();
+            }
+
+            function attachDayClickListeners() { document.querySelectorAll('.day:not(.not-in-month)').forEach(day => { day.addEventListener('click', function() { openEntryModal(this.dataset.date); }); }); }
+            function createEntryFieldHTML(entry = { location: '', hours: '' }) { return `<div class="entry-group"><button type="button" class="delete-entry-btn" title="Șterge acest loc">&times;</button><label>Locație/Descriere</label><textarea class="work-location" placeholder="ex: Birou, Remote, Proiectul X">${entry.location}</textarea><label>Ore lucrate</label><input type="number" class="hours-worked" min="0" max="24" step="0.1" placeholder="ex: 8.5" value="${entry.hours}"></div>`; }
+            function openEntryModal(date) { selectedDateInput.value = date; entryFormFields.innerHTML = ''; const d = new Date(date + 'T00:00:00'); modalDateEl.textContent = d.toLocaleDateString('ro-RO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); const existingData = workData[date] || { entries: [] }; if (existingData.entries.length > 0) { existingData.entries.forEach(entry => { entryFormFields.insertAdjacentHTML('beforeend', createEntryFieldHTML(entry)); }); } else { entryFormFields.insertAdjacentHTML('beforeend', createEntryFieldHTML()); } entryModal.style.display = 'block'; }
+            function closeModal() { entryModal.style.display = 'none'; }
+            function animateValue(obj, start, end, duration) { let startTimestamp = null; const step = (timestamp) => { if (!startTimestamp) startTimestamp = timestamp; const progress = Math.min((timestamp - startTimestamp) / duration, 1); obj.innerHTML = (progress * (end - start) + start).toFixed(1); if (progress < 1) window.requestAnimationFrame(step); }; window.requestAnimationFrame(step); }
+
+            loginForm.addEventListener('submit', handleLogin);
+            registerForm.addEventListener('submit', handleRegister);
+            showRegisterBtn.addEventListener('click', () => { loginForm.style.display = 'none'; registerForm.style.display = 'block'; authMessage.textContent = ''; });
+            showLoginBtn.addEventListener('click', () => { registerForm.style.display = 'none'; loginForm.style.display = 'block'; authMessage.textContent = ''; });
+            logoutBtn.addEventListener('click', handleLogout);
+            prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); generateCalendar(currentDate); });
+            nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); generateCalendar(currentDate); });
+            addEntryBtn.addEventListener('click', () => { entryFormFields.insertAdjacentHTML('beforeend', createEntryFieldHTML()); });
+            entryFormFields.addEventListener('click', (event) => { if (event.target && event.target.classList.contains('delete-entry-btn')) { event.target.closest('.entry-group').remove(); } });
+            closeModalBtn.addEventListener('click', () => { closeModal(); });
+            saveBtn.addEventListener('click', handleSaveData);
+            deleteAllBtn.addEventListener('click', handleDeleteAllData);
+
+            if (localStorage.getItem('authToken')) {
+                initializeApp();
+            } else {
+                showAuth();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "users": {
+    "admin": {
+      "password": "$2b$10$HPEFoofAmmVP0dS2InT5COtYfj23cbBkmEfwtriHoQBs./9wP/z/m"
+    },
+    "capybara": {
+      "password": "$2b$10$MokPv2L.3sZpr7iLHhKkw.k8WiYbQX8RSOmGlPxcWHyDP05JhUsP6"
+    },
+    "eu": {
+      "password": "$2b$10$kcn/QP.swjW36gmGLu4BhurG6KajIdRuXi8yoEzdsfTBNWLrQ/9Kq"
+    },
+    "Cipri": {
+      "password": "$2b$10$0xFSGHUC/cIwJNGxOONwF.LhPJmhmh59Lim6T8Ni3Y5sZrRm1xB1S"
+    },
+    "Dionica": {
+      "password": "$2b$10$2xSi5haQTmvaGGlKwfFuC.TOwJogFRe085ITYUnizFoqbmIYBhXdG"
+    },
+    "cirpi": {
+      "password": "$2b$10$in3CrxAeqAR/c7OuZnR/keF4J3nUQyL6JpZvDPeh1MyeyLQVAwt3S"
+    }
+  },
+  "workData": {
+    "admin": {
+      "2025-08-03": {
+        "entries": [
+          {
+            "location": "obiectiv",
+            "hours": 21
+          },
+          {
+            "location": "camere",
+            "hours": 21
+          }
+        ]
+      }
+    },
+    "capybara": {},
+    "eu": {},
+    "Cipri": {
+      "2025-08-01": {
+        "entries": [
+          {
+            "location": "da",
+            "hours": 21
+          }
+        ]
+      }
+    },
+    "Dionica": {},
+    "cirpi": {}
+  }
+}
