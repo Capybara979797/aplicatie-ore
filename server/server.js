@@ -1,4 +1,4 @@
-// Fisier: /server/server.js (Versiunea 4.1 - Stare Real-Time Corectată)
+// Fisier: /server/server.js (Versiunea 4.2 - Corecție IP Public)
 
 const express = require('express');
 const http = require('http');
@@ -9,7 +9,11 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 
+// --- 1. Configurarea Serverului ---
 const app = express();
+// MODIFICAT: Adăugăm această linie pentru a avea încredere în proxy-ul Render
+app.set('trust proxy', 1);
+
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
@@ -22,6 +26,7 @@ const SECRET_KEY = 'cheia-ta-super-secreta-pe-care-o-vei-schimba';
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "admin123";
 
+// --- 2. Funcții ajutătoare pentru Baza de Date ---
 const readDB = () => {
     if (!fs.existsSync(DB_PATH)) {
         fs.writeFileSync(DB_PATH, JSON.stringify({ users: {}, workData: {} }));
@@ -34,6 +39,7 @@ const writeDB = (data) => {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
 };
 
+// --- 3. Middleware pentru Autentificare ---
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -45,6 +51,7 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// --- 4. Rute API pentru HTTP ---
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) { return res.status(400).json({ message: 'Numele de utilizator și parola sunt obligatorii.' }); }
@@ -108,25 +115,22 @@ app.delete('/api/workdata/:date', authenticateToken, (req, res) => {
     }
 });
 
+// --- 5. Logica pentru comunicare în timp real (Socket.IO) ---
 let onlineUsers = {};
 let adminSockets = [];
 
 io.on('connection', (socket) => {
-    
     socket.on('user_online', (data) => {
         try {
             const decoded = jwt.verify(data.token, SECRET_KEY);
-            
-            // CORECTAT: Aici este logica reparată
             if (decoded.isAdmin) {
                 adminSockets.push(socket.id);
-                // Când un admin se conectează, îi trimitem imediat lista curentă de utilizatori
                 socket.emit('update_online_users', onlineUsers);
             } else if (decoded.username) {
                 const username = decoded.username;
-                const ip = socket.handshake.address.includes('::') ? '127.0.0.1' : socket.handshake.address;
+                // MODIFICAT: Logica pentru a citi IP-ul corect de la Render
+                const ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address.replace('::ffff:', '');
                 onlineUsers[username] = { socketId: socket.id, ip: ip };
-                // Când un utilizator normal se conectează, anunțăm pe toată lumea (inclusiv toți adminii)
                 io.emit('update_online_users', onlineUsers);
             }
         } catch (err) { /* Ignorăm token-urile invalide */ }
@@ -157,14 +161,13 @@ io.on('connection', (socket) => {
             }
         }
         adminSockets = adminSockets.filter(id => id !== socket.id);
-        
-        // Trimitem actualizarea doar dacă un utilizator normal s-a deconectat
         if (wasUser) {
             io.emit('update_online_users', onlineUsers);
         }
     });
 });
 
+// --- 6. Pornirea Serverului ---
 const PORT = 3000;
 server.listen(PORT, () => {
     console.log(`Serverul rulează pe http://localhost:${PORT}`);
