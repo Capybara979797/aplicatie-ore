@@ -42,8 +42,8 @@ async function connectToDatabase() {
 }
 
 const SECRET_KEY = 'cheia-ta-super-secreta-pe-care-o-vei-schimba';
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "admin123";
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
 
 // --- 3. Middleware pentru Autentificare ---
 const authenticateToken = (req, res, next) => {
