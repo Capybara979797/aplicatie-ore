@@ -25,8 +25,13 @@
         .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .calendar-controls button { background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end)); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 1em; font-family: var(--font-family); font-weight: 600; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 4px 10px rgba(58, 123, 213, 0.3); }
         #month-name { font-size: 1.8em; font-weight: 600; color: var(--text-color); text-align: center; }
-        #total-hours-container { text-align: center; margin: -10px 0 20px 0; font-size: 1.2em; color: var(--text-color); }
-        #total-hours { font-weight: 700; color: var(--primary-color); font-size: 1.5em; padding: 0 5px; }
+        
+        .totals-wrapper { text-align: center; margin: -10px 0 20px 0; display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+        .total-container { font-size: 1.2em; color: var(--text-color); }
+        .total-container span { font-weight: 700; font-size: 1.5em; padding: 0 5px; }
+        #total-hours { color: var(--primary-color); }
+        #total-income { color: var(--success-color); }
+        
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
         .day-header { padding: 10px 0; text-align: center; font-weight: 600; color: var(--subtle-text-color); font-size: 0.9em; }
         .day { min-height: 100px; border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; position: relative; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; overflow: hidden; }
@@ -41,7 +46,8 @@
         #auth-container { display: none; width: 100%; max-width: 400px; background: var(--secondary-color); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px var(--shadow-color); text-align: center; }
         #auth-container h2 { margin-bottom: 25px; color: var(--text-color); }
         #auth-container input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-family: var(--font-family); font-size: 16px; }
-        #auth-container button { width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end)); color: #fff; font-size: 1em; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        #auth-container button { width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end)); color: #fff; font-size: 1em; font-weight: 600; cursor: pointer; margin-top: 10px; position: relative; }
+        #auth-container button:disabled { background: #bdc3c7; cursor: not-allowed; }
         #auth-container .toggle-form-btn { background: none; color: var(--primary-color); margin-top: 15px; font-size: 0.9em; box-shadow: none; }
         #auth-message { margin-top: 15px; color: var(--danger-color); min-height: 20px; font-size: 0.9em; }
         
@@ -53,7 +59,6 @@
         .modal-form input, .modal-form textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-family: var(--font-family); font-size: 16px; }
         .entry-group { background: var(--secondary-color); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 15px; position: relative; }
         .delete-entry-btn { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border: none; background: #f1f2f6; color: var(--subtle-text-color); border-radius: 50%; font-size: 20px; line-height: 28px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
-        .delete-entry-btn:hover { background-color: var(--danger-color); color: white; transform: scale(1.1); }
         #add-entry-btn { background: none; border: 2px solid var(--success-color); color: var(--success-color); padding: 12px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 25px 0; }
         #add-entry-btn:hover { background: #e8f9f5; }
         .form-actions { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-top: 30px; }
@@ -62,6 +67,10 @@
         #delete-all-btn { background-color: var(--secondary-color); color: var(--danger-color); border: 2px solid var(--border-color); box-shadow: none; }
         .data-management { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); }
         #logout-btn { background-color: #95a5a6; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: var(--font-family); font-size: 0.9em; }
+
+        #loader { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); }
+        .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #3A7BD5; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; position: absolute; left: 50%; top: 50%; margin-left: -30px; margin-top: -30px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         @media (max-width: 768px) {
             body { padding: 0; align-items: stretch; }
@@ -82,17 +91,30 @@
 </head>
 <body>
 
+    <div id="loader"><div class="spinner"></div></div>
+    
     <div id="auth-container">
         <form id="login-form"><h2>Autentificare</h2><div id="auth-message"></div><input type="text" id="login-username" placeholder="Nume utilizator" required autocomplete="username"><input type="password" id="login-password" placeholder="Parolă" required autocomplete="current-password"><button type="submit">Intră în cont</button><button type="button" class="toggle-form-btn" id="show-register">Nu ai cont? Înregistrează-te</button></form>
         <form id="register-form" style="display: none;"><h2>Înregistrare</h2><input type="text" id="register-username" placeholder="Alege un nume de utilizator" required autocomplete="username"><input type="password" id="register-password" placeholder="Alege o parolă" required autocomplete="new-password"><button type="submit">Creează Cont</button><button type="button" class="toggle-form-btn" id="show-login">Ai deja cont? Intră în cont</button></form>
     </div>
+
     <div class="app-container">
         <header><h1>Luke Sistem for work</h1><p class="subtitle">O metodă simplă și elegantă pentru a-ți monitoriza timpul</p></header>
         <div class="calendar-controls"><button id="prev-month">&lt; Luna Anterioară</button><h2 id="month-name"></h2><button id="next-month">Luna Următoare &gt;</button></div>
-        <div id="total-hours-container">Total ore pe lună: <span id="total-hours">0.0</span></div>
+        
+        <div class="totals-wrapper">
+            <div class="total-container" id="total-hours-container">
+                Total ore: <span id="total-hours">0.0</span>
+            </div>
+            <div class="total-container" id="income-container">
+                Venit estimat: <span id="total-income">0.00</span> €
+            </div>
+        </div>
+
         <div class="calendar-grid" id="calendar-grid"></div>
         <div class="data-management"><button id="logout-btn">🚪 Deconectare</button></div>
     </div>
+
     <div id="entry-modal" class="modal">
         <div class="modal-content"><h3 id="modal-date" class="modal-title"></h3><span class="close-button">&times;</span>
             <div class="modal-form">
@@ -122,6 +144,7 @@
             const calendarGrid = document.getElementById('calendar-grid');
             const monthNameEl = document.getElementById('month-name');
             const totalHoursEl = document.getElementById('total-hours');
+            const totalIncomeEl = document.getElementById('total-income');
             const prevMonthBtn = document.getElementById('prev-month');
             const nextMonthBtn = document.getElementById('next-month');
             const logoutBtn = document.getElementById('logout-btn');
@@ -133,41 +156,86 @@
             const deleteAllBtn = document.getElementById('delete-all-btn');
             const modalDateEl = document.getElementById('modal-date');
             const selectedDateInput = document.getElementById('selected-date');
+            const loader = document.getElementById('loader');
 
-            // MODIFICAT: Adresa serverului este acum cea corectă
             const API_URL = 'https://aplicatie-ore.onrender.com/api';
+            const HOURLY_RATE = 10;
             let workData = {};
             let currentDate = new Date(2025, 7, 1);
             const minDate = new Date(2025, 7, 1);
             const maxDate = new Date(2025, 8, 30);
             let socket;
 
-            function showApp() { authContainer.style.display = 'none'; appContainer.style.display = 'block'; document.body.style.alignItems = 'flex-start'; if (window.innerWidth <= 768) { document.body.style.alignItems = 'stretch'; } }
-            function showAuth() { authContainer.style.display = 'block'; appContainer.style.display = 'none'; document.body.style.alignItems = 'center'; }
-            
-            function connectWebSocket() {
-                const token = localStorage.getItem('authToken');
-                if (!token || (socket && socket.connected)) return;
-                // MODIFICAT: Adresa serverului este acum cea corectă
-                socket = io("https://aplicatie-ore.onrender.com");
-                socket.on('connect', () => { socket.emit('user_online', { token: token }); });
-                socket.on('new_message', (data) => { alert(`Mesaj de la admin:\n\n${data.message}`); });
+            function animateValue(obj, start, end, duration, decimalPlaces = 1) {
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    obj.innerHTML = (progress * (end - start) + start).toFixed(decimalPlaces);
+                    if (progress < 1) window.requestAnimationFrame(step);
+                };
+                window.requestAnimationFrame(step);
             }
 
-            async function handleLogin(event) { event.preventDefault(); authMessage.textContent = ''; const username = loginForm.querySelector('#login-username').value; const password = loginForm.querySelector('#login-password').value; try { const response = await fetch(`${API_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const result = await response.json(); if (!response.ok) throw new Error(result.message); localStorage.setItem('authToken', result.token); await initializeApp(); } catch (error) { authMessage.textContent = error.message; } }
-            async function handleRegister(event) { event.preventDefault(); authMessage.textContent = ''; const username = registerForm.querySelector('#register-username').value; const password = registerForm.querySelector('#register-password').value; try { const response = await fetch(`${API_URL}/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const result = await response.json(); if (!response.ok) throw new Error(result.message); authMessage.textContent = 'Cont creat! Te poți autentifica.'; authMessage.style.color = 'var(--success-color)'; registerForm.style.display = 'none'; loginForm.style.display = 'block'; } catch (error) { authMessage.textContent = error.message; authMessage.style.color = 'var(--danger-color)'; } }
+            function showLoader() { loader.style.display = 'block'; }
+            function hideLoader() { loader.style.display = 'none'; }
+            function showApp() { authContainer.style.display = 'none'; appContainer.style.display = 'block'; document.body.style.alignItems = 'flex-start'; if (window.innerWidth <= 768) { document.body.style.alignItems = 'stretch'; } }
+            function showAuth() { authContainer.style.display = 'block'; appContainer.style.display = 'none'; document.body.style.alignItems = 'center'; }
+            function connectWebSocket() { const token = localStorage.getItem('authToken'); if (!token || (socket && socket.connected)) return; socket = io("https://aplicatie-ore.onrender.com"); socket.on('connect', () => { socket.emit('user_online', { token: token }); }); socket.on('new_message', (data) => { alert(`Mesaj de la admin:\n\n${data.message}`); }); }
+            async function handleLogin(event) { event.preventDefault(); authMessage.textContent = ''; const loginButton = loginForm.querySelector('button[type="submit"]'); loginButton.disabled = true; showLoader(); const username = loginForm.querySelector('#login-username').value; const password = loginForm.querySelector('#login-password').value; try { const response = await fetch(`${API_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const result = await response.json(); if (!response.ok) throw new Error(result.message); localStorage.setItem('authToken', result.token); await initializeApp(); } catch (error) { authMessage.textContent = error.message; } finally { hideLoader(); loginButton.disabled = false; } }
+            async function handleRegister(event) { event.preventDefault(); authMessage.textContent = ''; const registerButton = registerForm.querySelector('button[type="submit"]'); registerButton.disabled = true; showLoader(); const username = registerForm.querySelector('#register-username').value; const password = registerForm.querySelector('#register-password').value; try { const response = await fetch(`${API_URL}/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const result = await response.json(); if (!response.ok) throw new Error(result.message); authMessage.textContent = 'Cont creat! Te poți autentifica.'; authMessage.style.color = 'var(--success-color)'; registerForm.style.display = 'none'; loginForm.style.display = 'block'; } catch (error) { authMessage.textContent = error.message; authMessage.style.color = 'var(--danger-color)'; } finally { hideLoader(); registerButton.disabled = false; } }
             function handleLogout() { if (socket) { socket.disconnect(); } localStorage.removeItem('authToken'); workData = {}; showAuth(); }
             async function initializeApp() { await fetchWorkData(); showApp(); generateCalendar(currentDate); connectWebSocket(); }
             async function fetchWorkData() { const token = localStorage.getItem('authToken'); if (!token) { handleLogout(); return; } try { const response = await fetch(`${API_URL}/workdata`, { headers: { 'Authorization': `Bearer ${token}` } }); if (response.status === 401 || response.status === 403) { handleLogout(); return; } workData = await response.json(); } catch (error) { console.error("Eroare la preluarea datelor:", error); } }
             async function handleSaveData() { const date = selectedDateInput.value; if (!date) return; const locationInputs = document.querySelectorAll('.work-location'); const hoursInputs = document.querySelectorAll('.hours-worked'); const entries = []; for (let i = 0; i < locationInputs.length; i++) { const location = locationInputs[i].value.trim(); const hours = parseFloat(hoursInputs[i].value); if (location || hours > 0) { entries.push({ location, hours: hours || 0 }); } } const finalEntries = entries.filter(e => e.location && e.hours > 0); const token = localStorage.getItem('authToken'); await fetch(`${API_URL}/workdata`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ date, entries: finalEntries }) }); closeModal(); await fetchWorkData(); generateCalendar(currentDate); }
             async function handleDeleteAllData() { const date = selectedDateInput.value; if (!date) return; const token = localStorage.getItem('authToken'); await fetch(`${API_URL}/workdata/${date}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); closeModal(); await fetchWorkData(); generateCalendar(currentDate); }
-            function generateCalendar(date) { calendarGrid.innerHTML = ''; const year = date.getFullYear(); const month = date.getMonth(); monthNameEl.textContent = `${["Ianuarie", "Februarie", "Martie", "Aprilie", "Mai", "Iunie", "Iulie", "August", "Septembrie", "Octombrie", "Noiembrie", "Decembrie"][month]} ${year}`; const firstDayOfCurrentMonth = new Date(year, month, 1); prevMonthBtn.disabled = firstDayOfCurrentMonth <= minDate; const lastDayOfCurrentMonth = new Date(year, month + 1, 0); nextMonthBtn.disabled = lastDayOfCurrentMonth >= maxDate; const firstDayOfMonth = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate(); const startDay = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1; ['Lu', 'Ma', 'Mi', 'Jo', 'Vi', 'Sâ', 'Du'].forEach(header => { calendarGrid.insertAdjacentHTML('beforeend', `<div class="day-header">${header}</div>`); }); for (let i = 0; i < startDay; i++) { calendarGrid.insertAdjacentHTML('beforeend', `<div class="day not-in-month"></div>`); } let monthlyTotalHours = 0; for (let i = 1; i <= daysInMonth; i++) { const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`; const data = workData[dateString]; let dayHTML = `<div class="day" data-date="${dateString}"><div class="day-number">${i}</div>`; let dayEntriesHTML = '<div class="day-entries">'; let dayTotalHours = 0; if (data && data.entries && data.entries.length > 0) { data.entries.forEach(entry => { dayEntriesHTML += `<div class="day-entry-item"><span class="location">${entry.location}</span><span class="hours">${entry.hours}h</span></div>`; dayTotalHours += entry.hours; }); monthlyTotalHours += dayTotalHours; } dayEntriesHTML += '</div>'; dayHTML += dayEntriesHTML; if (dayTotalHours > 0) { dayHTML += `<div class="day-total-hours">${dayTotalHours.toFixed(1)} ore</div>`; } dayHTML += `</div>`; calendarGrid.insertAdjacentHTML('beforeend', dayHTML); } animateValue(totalHoursEl, parseFloat(totalHoursEl.textContent) || 0, monthlyTotalHours, 500); attachDayClickListeners(); }
+            
+            function generateCalendar(date) {
+                calendarGrid.innerHTML = '';
+                const year = date.getFullYear(); const month = date.getMonth();
+                monthNameEl.textContent = `${["Ianuarie", "Februarie", "Martie", "Aprilie", "Mai", "Iunie", "Iulie", "August", "Septembrie", "Octombrie", "Noiembrie", "Decembrie"][month]} ${year}`;
+                const firstDayOfCurrentMonth = new Date(year, month, 1);
+                prevMonthBtn.disabled = firstDayOfCurrentMonth <= minDate;
+                const lastDayOfCurrentMonth = new Date(year, month + 1, 0);
+                nextMonthBtn.disabled = lastDayOfCurrentMonth >= maxDate;
+                const firstDayOfMonth = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const startDay = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1;
+
+                ['Lu', 'Ma', 'Mi', 'Jo', 'Vi', 'Sâ', 'Du'].forEach(header => { calendarGrid.insertAdjacentHTML('beforeend', `<div class="day-header">${header}</div>`); });
+                for (let i = 0; i < startDay; i++) { calendarGrid.insertAdjacentHTML('beforeend', `<div class="day not-in-month"></div>`); }
+                
+                let monthlyTotalHours = 0;
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                    const data = workData[dateString];
+                    let dayHTML = `<div class="day" data-date="${dateString}"><div class="day-number">${i}</div>`;
+                    let dayEntriesHTML = '<div class="day-entries">'; let dayTotalHours = 0;
+                    if (data && data.entries && data.entries.length > 0) {
+                        data.entries.forEach(entry => {
+                            dayEntriesHTML += `<div class="day-entry-item"><span class="location">${entry.location}</span><span class="hours">${entry.hours}h</span></div>`;
+                            dayTotalHours += entry.hours;
+                        });
+                        monthlyTotalHours += dayTotalHours;
+                    }
+                    dayEntriesHTML += '</div>'; dayHTML += dayEntriesHTML;
+                    if (dayTotalHours > 0) { dayHTML += `<div class="day-total-hours">${dayTotalHours.toFixed(1)} ore</div>`; }
+                    dayHTML += `</div>`; calendarGrid.insertAdjacentHTML('beforeend', dayHTML);
+                }
+                
+                const monthlyIncome = monthlyTotalHours * HOURLY_RATE;
+
+                animateValue(totalHoursEl, parseFloat(totalHoursEl.textContent) || 0, monthlyTotalHours, 500, 1);
+                animateValue(totalIncomeEl, parseFloat(totalIncomeEl.textContent) || 0, monthlyIncome, 500, 2);
+                
+                attachDayClickListeners();
+            }
+
             function attachDayClickListeners() { document.querySelectorAll('.day:not(.not-in-month)').forEach(day => { day.addEventListener('click', function() { openEntryModal(this.dataset.date); }); }); }
             function createEntryFieldHTML(entry = { location: '', hours: '' }) { return `<div class="entry-group"><button type="button" class="delete-entry-btn" title="Șterge acest loc">&times;</button><label>Locație/Descriere</label><textarea class="work-location" placeholder="ex: Birou, Remote, Proiectul X">${entry.location}</textarea><label>Ore lucrate</label><input type="number" class="hours-worked" min="0" max="24" step="0.1" placeholder="ex: 8.5" value="${entry.hours}"></div>`; }
             function openEntryModal(date) { selectedDateInput.value = date; entryFormFields.innerHTML = ''; const d = new Date(date + 'T00:00:00'); modalDateEl.textContent = d.toLocaleDateString('ro-RO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); const existingData = workData[date] || { entries: [] }; if (existingData.entries.length > 0) { existingData.entries.forEach(entry => { entryFormFields.insertAdjacentHTML('beforeend', createEntryFieldHTML(entry)); }); } else { entryFormFields.insertAdjacentHTML('beforeend', createEntryFieldHTML()); } entryModal.style.display = 'block'; }
             function closeModal() { entryModal.style.display = 'none'; }
-            function animateValue(obj, start, end, duration) { let startTimestamp = null; const step = (timestamp) => { if (!startTimestamp) startTimestamp = timestamp; const progress = Math.min((timestamp - startTimestamp) / duration, 1); obj.innerHTML = (progress * (end - start) + start).toFixed(1); if (progress < 1) window.requestAnimationFrame(step); }; window.requestAnimationFrame(step); }
-
+            
             loginForm.addEventListener('submit', handleLogin);
             registerForm.addEventListener('submit', handleRegister);
             showRegisterBtn.addEventListener('click', () => { loginForm.style.display = 'none'; registerForm.style.display = 'block'; authMessage.textContent = ''; });
