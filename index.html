@@ -72,6 +72,21 @@
         .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #3A7BD5; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; position: absolute; left: 50%; top: 50%; margin-left: -30px; margin-top: -30px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* NOU: Stiluri pentru videoclip */
+        .video-container {
+            margin-top: 30px;
+            border-radius: 12px;
+            overflow: hidden; /* Ascunde părțile din video care depășesc containerul rotunjit */
+            box-shadow: 0 8px 25px var(--shadow-color);
+        }
+        .footer-video {
+            width: 100%;
+            height: auto;
+            max-height: 200px;
+            display: block; /* Elimină spațiul de sub video */
+            object-fit: cover; /* Face video-ul să umple spațiul fără a se deforma */
+        }
+
         @media (max-width: 768px) {
             body { padding: 0; align-items: stretch; }
             .app-container { margin: 0; padding: 15px; padding-top: var(--safe-area-inset-top); border-radius: 0; min-height: calc(100vh - var(--safe-area-inset-top)); box-shadow: none; }
@@ -99,20 +114,20 @@
     </div>
 
     <div class="app-container">
-        <header><h1>Luke System for work</h1><p class="subtitle">O metodă simplă și elegantă pentru a-ți monitoriza timpul</p></header>
+        <header><h1>Luke Sistem for work</h1><p class="subtitle">O metodă simplă și elegantă pentru a-ți monitoriza timpul</p></header>
         <div class="calendar-controls"><button id="prev-month">&lt; Luna Anterioară</button><h2 id="month-name"></h2><button id="next-month">Luna Următoare &gt;</button></div>
         
         <div class="totals-wrapper">
-            <div class="total-container" id="total-hours-container">
-                Total ore: <span id="total-hours">0.0</span>
-            </div>
-            <div class="total-container" id="income-container">
-                Venit estimat: <span id="total-income">0.00</span> €
-            </div>
+            <div class="total-container" id="total-hours-container">Total ore: <span id="total-hours">0.0</span></div>
+            <div class="total-container" id="income-container">Venit estimat: <span id="total-income">0.00</span> €</div>
         </div>
 
         <div class="calendar-grid" id="calendar-grid"></div>
         <div class="data-management"><button id="logout-btn">🚪 Deconectare</button></div>
+
+        <div class="video-container">
+            <video class="footer-video" src="./assets/background.mp4" autoplay loop muted playsinline></video>
+        </div>
     </div>
 
     <div id="entry-modal" class="modal">
@@ -166,17 +181,7 @@
             const maxDate = new Date(2025, 8, 30);
             let socket;
 
-            function animateValue(obj, start, end, duration, decimalPlaces = 1) {
-                let startTimestamp = null;
-                const step = (timestamp) => {
-                    if (!startTimestamp) startTimestamp = timestamp;
-                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                    obj.innerHTML = (progress * (end - start) + start).toFixed(decimalPlaces);
-                    if (progress < 1) window.requestAnimationFrame(step);
-                };
-                window.requestAnimationFrame(step);
-            }
-
+            function animateValue(obj, start, end, duration, decimalPlaces = 1) { let startTimestamp = null; const step = (timestamp) => { if (!startTimestamp) startTimestamp = timestamp; const progress = Math.min((timestamp - startTimestamp) / duration, 1); obj.innerHTML = (progress * (end - start) + start).toFixed(decimalPlaces); if (progress < 1) window.requestAnimationFrame(step); }; window.requestAnimationFrame(step); }
             function showLoader() { loader.style.display = 'block'; }
             function hideLoader() { loader.style.display = 'none'; }
             function showApp() { authContainer.style.display = 'none'; appContainer.style.display = 'block'; document.body.style.alignItems = 'flex-start'; if (window.innerWidth <= 768) { document.body.style.alignItems = 'stretch'; } }
